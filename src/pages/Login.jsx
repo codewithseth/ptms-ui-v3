@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { loginUser } from "../api/auth";
+import { useAuth } from "../context/AuthContext";
 
 const Login = () => {
+  const { setAccessToken, setUser } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
@@ -12,17 +15,32 @@ const Login = () => {
     setError("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!form.username.trim() || !form.password.trim()) {
       setError("Please enter both username and password.");
       return;
     }
+
     setLoading(true);
-    setTimeout(() => {
+
+    try {
+      const response = await loginUser({
+        username: form.username,
+        password: form.password,
+      });
+
+      if (response?.accessToken) {
+        setAccessToken(response.accessToken);
+        setUser(response.user);
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      setError(error.message || "Login failed. Please try again.");
+    } finally {
       setLoading(false);
-      navigate("/dashboard");
-    }, 800);
+    }
   };
 
   return (

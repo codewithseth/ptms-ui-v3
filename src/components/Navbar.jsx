@@ -1,5 +1,5 @@
 import { useLocation } from "react-router-dom";
-import { currentUser } from "../data/mockData";
+import { useAuth } from "../context/AuthContext";
 
 const pageTitles = {
   "/dashboard": "Dashboard",
@@ -10,6 +10,7 @@ const pageTitles = {
 };
 
 const Navbar = () => {
+  const { user: currentUser } = useAuth();
   const location = useLocation();
   const title = pageTitles[location.pathname] || "PTMS";
 
@@ -19,13 +20,13 @@ const Navbar = () => {
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2 bg-indigo-50 rounded-full px-3 py-1.5">
           <div className="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold">
-            {currentUser.username.charAt(0).toUpperCase()}
+            {currentUser?.username.charAt(0).toUpperCase()}
           </div>
           <div className="text-right hidden sm:block">
             <p className="text-xs font-semibold text-gray-800 leading-none">
-              {currentUser.username}
+              {currentUser?.username}
             </p>
-            <p className="text-xs text-indigo-500">{currentUser.roles}</p>
+            <p className="text-xs text-indigo-500">{currentUser?.roles}</p>
           </div>
         </div>
       </div>

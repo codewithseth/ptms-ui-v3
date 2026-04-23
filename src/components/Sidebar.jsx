@@ -1,4 +1,6 @@
 import { NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { logoutUser } from "../api/auth";
 
 const navItems = [
   {
@@ -99,10 +101,18 @@ const navItems = [
 ];
 
 const Sidebar = ({ collapsed, onToggle }) => {
+  const { setUser, setAccessToken } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    navigate("/");
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+      setUser(null);
+      setAccessToken(null);
+      navigate("/");
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
   };
 
   return (

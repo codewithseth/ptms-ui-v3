@@ -1,5 +1,5 @@
-import { currentUser } from "../data/mockData";
 import Card from "../components/Card";
+import { useAuth } from "../context/AuthContext";
 
 const roleColors = {
   Admin: "bg-red-100 text-red-700 border-red-200",
@@ -19,10 +19,11 @@ const InfoRow = ({ label, value }) => (
 );
 
 const Profile = () => {
+  const { user: currentUser } = useAuth();
   const roleClass =
-    roleColors[currentUser.roles] ||
+    roleColors[currentUser?.roles] ||
     "bg-gray-100 text-gray-600 border-gray-200";
-  const initials = currentUser.username.slice(0, 2).toUpperCase();
+  const initials = currentUser?.username?.slice(0, 2).toUpperCase();
 
   return (
     <div className="max-w-lg space-y-5">
@@ -42,22 +43,25 @@ const Profile = () => {
           </div>
           <div>
             <h3 className="text-base font-bold text-gray-800">
-              {currentUser.username}
+              {currentUser?.username}
             </h3>
             <span
               className={`inline-block mt-1 text-xs px-2.5 py-0.5 rounded-full font-medium border ${roleClass}`}
             >
-              {currentUser.roles}
+              {currentUser?.roles}
             </span>
           </div>
         </div>
 
         {/* Details */}
         <div>
-          <InfoRow label="User ID" value={`#${currentUser.id}`} />
-          <InfoRow label="Username" value={currentUser.username} />
-          <InfoRow label="Role" value={currentUser.roles} />
-          <InfoRow label="Member Since" value={currentUser.created_at} />
+          <InfoRow label="User ID" value={`${currentUser?.id || "N/A"}`} />
+          <InfoRow label="Username" value={currentUser?.username || "N/A"} />
+          <InfoRow label="Role" value={currentUser?.roles || "N/A"} />
+          <InfoRow
+            label="Member Since"
+            value={currentUser?.created_at || "N/A"}
+          />
         </div>
       </Card>
 
