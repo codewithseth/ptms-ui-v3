@@ -1,6 +1,8 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Card from "../components/Card";
-import { dashboardStats, tasks, projects } from "../data/mockData";
+import { getDashboardStats } from "../api/dashboard";
+import { tasks, projects } from "../data/mockData";
 
 const StatCard = ({ label, value, color, icon }) => (
   <Card className="flex items-center gap-4">
@@ -27,8 +29,53 @@ const statusConfig = {
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const [dashboardStats, setDashboardStats] = useState({
+    totalUsers: 0,
+    totalProjects: 0,
+    totalTasks: 0,
+    tasksDone: 0,
+    tasksInProgress: 0,
+    tasksTodo: 0,
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchDashboardStats = async () => {
+      try {
+        setLoading(true);
+        const stats = await getDashboardStats();
+        setDashboardStats(stats);
+        setError(null);
+      } catch (err) {
+        setError(err.message);
+        console.error("Failed to fetch dashboard stats:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardStats();
+  }, []);
+
   const recentTasks = tasks.slice(0, 5);
   const recentProjects = projects.slice(0, 4);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-gray-600">Loading dashboard...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-red-600">Error: {error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
