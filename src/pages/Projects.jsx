@@ -1,13 +1,15 @@
-import { useState, useMemo } from "react";
-import { projects } from "../data/mockData";
+import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { getProjects } from "../api/project";
+import { formatDateTime } from "../lib/formatDateTime";
 import Card from "../components/Card";
 import Table from "../components/Table";
 import SearchBar from "../components/SearchBar";
 import Pagination from "../components/Pagination";
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 10;
 
-const columns = [
+const buildColumns = (navigate) => [
   { key: "id", label: "#" },
   { key: "title", label: "Title" },
   {
@@ -19,35 +21,95 @@ const columns = [
       </span>
     ),
   },
-  { key: "created_at", label: "Created At" },
+  {
+    key: "created_at",
+    label: "Created At",
+    render: (val) => formatDateTime(val),
+  },
+  {
+    key: "actions",
+    label: "Actions",
+    render: (_, row) => (
+      <button
+        onClick={() => navigate(`/projects/${row.id}/edit`)}
+        className="text-xs text-indigo-600 hover:text-indigo-800 font-medium hover:underline transition"
+      >
+        Edit
+      </button>
+    ),
+  },
 ];
 
 const Projects = () => {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const columns = buildColumns(navigate);
+  const [projects, setProjects] = useState([]);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const filtered = useMemo(() => {
-    const q = search.toLowerCase();
-    return projects.filter(
-      (p) =>
-        p.title.toLowerCase().includes(q) ||
-        p.description.toLowerCase().includes(q),
-    );
-  }, [search]);
+  const fetchProjects = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await getProjects({ page, limit: PAGE_SIZE });
+      setProjects(res.data);
+      setTotalPages(res.pagination.totalPages);
+      setTotalItems(res.pagination.totalItems);
+    } catch (err) {
+      setError(err.message || "Failed to load projects.");
+    } finally {
+      setLoading(false);
+    }
+  }, [page]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
 
   const handleSearch = (val) => {
     setSearch(val);
     setPage(1);
   };
 
+  const filtered = search
+    ? projects.filter(
+        (p) =>
+          p.title.toLowerCase().includes(search.toLowerCase()) ||
+          p.description?.toLowerCase().includes(search.toLowerCase()),
+      )
+    : projects;
+
   return (
     <div className="space-y-4">
-      <div>
-        <h2 className="text-lg font-semibold text-gray-800">Projects</h2>
-        <p className="text-sm text-gray-500">{filtered.length} records found</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-semibold text-gray-800">Projects</h2>
+          <p className="text-sm text-gray-500">{totalItems} records found</p>
+        </div>
+        <button
+          onClick={() => navigate("/projects/new")}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm
+            font-semibold rounded-lg shadow hover:bg-indigo-700 active:scale-95 transition"
+        >
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 4v16m8-8H4"
+            />
+          </svg>
+          New Project
+        </button>
       </div>
 
       <Card>
@@ -58,10 +120,18 @@ const Projects = () => {
             placeholder="Search by title or description..."
           />
         </div>
+
+        {error && (
+          <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2 mb-4">
+            {error}
+          </p>
+        )}
+
         <Table
           columns={columns}
-          data={paginated}
+          data={filtered}
           emptyMessage="No projects match your search."
+          loading={loading}
         />
         <Pagination
           currentPage={page}

@@ -1,18 +1,25 @@
 import { useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-const pageTitles = {
-  "/dashboard": "Dashboard",
-  "/users": "User Management",
-  "/projects": "Project Management",
-  "/tasks": "Task Management",
-  "/profile": "Profile",
+const getPageTitle = (pathname) => {
+  if (pathname === "/dashboard") return "Dashboard";
+  if (pathname === "/users") return "User Management";
+  if (pathname === "/users/new") return "New User";
+  if (/^\/users\/\d+\/edit$/.test(pathname)) return "Edit User";
+  if (pathname === "/projects") return "Project Management";
+  if (pathname === "/projects/new") return "New Project";
+  if (/^\/projects\/\d+\/edit$/.test(pathname)) return "Edit Project";
+  if (pathname === "/tasks") return "Task Management";
+  if (pathname === "/tasks/new") return "New Task";
+  if (/^\/tasks\/\d+\/edit$/.test(pathname)) return "Edit Task";
+  if (pathname === "/profile") return "Profile";
+  return "PTMS";
 };
 
 const Navbar = () => {
   const { user: currentUser } = useAuth();
   const location = useLocation();
-  const title = pageTitles[location.pathname] || "PTMS";
+  const title = getPageTitle(location.pathname);
 
   return (
     <header className="h-14 flex items-center justify-between px-6 bg-white border-b border-gray-100 shadow-sm shrink-0">
