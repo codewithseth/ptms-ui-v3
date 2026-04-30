@@ -20,7 +20,7 @@ const statusConfig = {
 
 const buildColumns = (navigate) => [
   { key: "id", label: "#" },
-  { key: "project_id", label: "Project ID" },
+  { key: "project_name", label: "Project" },
   { key: "title", label: "Title" },
   {
     key: "description",

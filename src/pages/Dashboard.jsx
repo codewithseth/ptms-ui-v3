@@ -102,7 +102,7 @@ const Dashboard = () => {
           }
         />
         <StatCard
-          label="Projects"
+          label="Total Projects"
           value={dashboardStats.totalProjects}
           color="bg-violet-500"
           icon={
